@@ -1,0 +1,100 @@
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+// Classe principal
+public class GerenciamentoRodoviario {
+    public static void main(String[] args) {
+        try {
+            PolicialRodoviario policial = new PolicialRodoviario("João", "1234");
+            policial.verificarIncidente();
+            
+            // Usando ExecutorService para gerenciar threads de forma eficiente
+            ExecutorService executor = Executors.newFixedThreadPool(2);
+            
+            // Simulação de operações de leitura e escrita no banco de dados
+            executor.submit(new OperacaoBancoDados("inserir"));
+            executor.submit(new OperacaoBancoDados("consultar"));
+            
+            // Finaliza as tarefas após a execução
+            executor.shutdown();
+            
+            // Aguarda a conclusão de todas as operações
+            if (!executor.awaitTermination(5, TimeUnit.SECONDS)) {
+                executor.shutdownNow();
+                System.out.println("Tempo de execução excedido. Finalizando as tarefas.");
+            }
+            
+        } catch (Exception e) {
+            System.out.println("Erro no sistema: " + e.getMessage());
+        }
+    }
+}
+
+// Classe abstrata representando um funcionário rodoviário
+abstract class FuncionarioRodoviario {
+    protected String nome;
+    protected String id;
+    
+    public FuncionarioRodoviario(String nome, String id) {
+        this.nome = nome;
+        this.id = id;
+    }
+    
+    public abstract void realizarTarefa();
+}
+
+// Classe PolicialRodoviario que herda de FuncionarioRodoviario
+class PolicialRodoviario extends FuncionarioRodoviario {
+    
+    public PolicialRodoviario(String nome, String id) {
+        super(nome, id);
+    }
+    
+    @Override
+    public void realizarTarefa() {
+        System.out.println(nome + " está realizando uma tarefa.");
+    }
+    
+    public void verificarIncidente() {
+        System.out.println(nome + " está verificando o incidente.");
+    }
+}
+
+// Simulação de operações com banco de dados
+class OperacaoBancoDados implements Runnable {
+    private String operacao;
+    
+    public OperacaoBancoDados(String operacao) {
+        this.operacao = operacao;
+    }
+    
+    @Override
+    public void run() {
+        try {
+            if (operacao.equalsIgnoreCase("inserir")) {
+                inserirDados();
+            } else if (operacao.equalsIgnoreCase("consultar")) {
+                consultarDados();
+            } else {
+                throw new IllegalArgumentException("Operação desconhecida: " + operacao);
+            }
+        } catch (InterruptedException e) {
+            System.out.println("Thread interrompida durante a operação: " + operacao);
+        } catch (Exception e) {
+            System.out.println("Erro na operação: " + operacao + ". Detalhes: " + e.getMessage());
+        }
+    }
+    
+    private void inserirDados() throws InterruptedException {
+        System.out.println("Iniciando inserção de dados no banco...");
+        Thread.sleep(1000); // Simula o tempo de operação
+        System.out.println("Dados inseridos com sucesso!");
+    }
+    
+    private void consultarDados() throws InterruptedException {
+        System.out.println("Iniciando consulta de dados no banco...");
+        Thread.sleep(1000); // Simula o tempo de operação
+        System.out.println("Consulta de dados realizada com sucesso!");
+    }
+}
